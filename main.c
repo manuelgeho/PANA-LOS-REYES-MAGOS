@@ -20,57 +20,57 @@ persistir = registrar
 ///ESTRUCTURAS
 typedef struct ///StockIngredientes
 {
-  char nombre_ingrediente[20];
-  float cantidad;  //en kg o en ml segun el tipo de ingrediente
-  char tipo[20]; /// "liquido" "solido"
-  float costo; ///costo por kg o por litro según corresponda
-}StockIngrediente;
+    char nombre_ingrediente[20];
+    float cantidad;  //en kg o en ml segun el tipo de ingrediente
+    char tipo[20]; /// "liquido" "solido"
+    float costo; ///costo por kg o por litro según corresponda
+} StockIngrediente;
 
 typedef struct ///Preparacion
- {
-   char nombre_preparacion[20];
-   int cantidad; ///por unidad, no hay por peso
- }Preparacion;
+{
+    char nombre_preparacion[20];
+    int cantidad; ///por unidad, no hay por peso
+} Preparacion;
 
- typedef struct ///Ingredientes Por Receta
- {
+typedef struct ///Ingredientes Por Receta
+{
     char nombre_ingrediente[20];
     float cantidad; ///puede ser en ml o en kg
- }IngredienteXReceta;
+} IngredienteXReceta;
 
 typedef struct ///Recetas
- {
-   char nombre_preparacion[20];
-   IngredienteXReceta ingredientes[20]; ///Puede tener hasta 20 ingredientes
-   int cantIngredientes; ///los validos de ingredientes
- }Receta;
-
-
-
- typedef struct ///Preparacion Venta
- {
-   char nombre_preparacion[20];
-   int cantidad; ///por unidad, no hay por peso
- }PreparacionVenta;
-
- typedef struct ///Precio Preparación
- {
-   char nombre_preparacion[20];
-   float precio_venta; ///precio por unidad
- }PrecioPreparacion;
-
- typedef struct /// Pedido Preparación
 {
-  char nombre_preparacion[20];
-  int cantidad;
-}PedidoPreparacion;
+    char nombre_preparacion[20];
+    IngredienteXReceta ingredientes[20]; ///Puede tener hasta 20 ingredientes
+    int cantIngredientes; ///los validos de ingredientes
+} Receta;
 
- typedef struct ///Venta
+
+
+typedef struct ///Preparacion Venta
 {
-  PedidoPreparacion items_pedido[20]; ///puedo pedir hasta 20 items
-  int cantItems;
-  float valor_total; ///valor total a pagar
-}Venta;
+    char nombre_preparacion[20];
+    int cantidad; ///por unidad, no hay por peso
+} PreparacionVenta;
+
+typedef struct ///Precio Preparación
+{
+    char nombre_preparacion[20];
+    float precio_venta; ///precio por unidad
+} PrecioPreparacion;
+
+typedef struct /// Pedido Preparación
+{
+    char nombre_preparacion[20];
+    int cantidad;
+} PedidoPreparacion;
+
+typedef struct ///Venta
+{
+    PedidoPreparacion items_pedido[20]; ///puedo pedir hasta 20 items
+    int cantItems;
+    float valor_total; ///valor total a pagar
+} Venta;
 
 
 ///////////////////PASO 1/////////////////////////////////////////
@@ -173,7 +173,8 @@ void obtenerRecetas(Receta r[],int* rValidos)
         }
         *rValidos = i;
         fclose(fp);
-    }else
+    }
+    else
         printf("No se pudo abrir el archivo recetas.bin");
 }
 void obtenerDemanda(Preparacion d[],int* dValidos)
@@ -189,7 +190,8 @@ void obtenerDemanda(Preparacion d[],int* dValidos)
         }
         *dValidos = i;
         fclose(fp);
-    }else
+    }
+    else
         printf("No se pudo abrir el archivo demanda.bin");
 }
 void obtenerPreparadosVentas(PreparacionVenta pv[],int* val)
@@ -263,15 +265,15 @@ void prepararDemandas(Preparacion demandas[],int dValidos,Receta recetas[],int r
     for(int i=0; i<dValidos; i++)
     {
         indiceReceta= buscarRecetaPorNombre(demandas[i].nombre_preparacion,recetas,rValidos);
-            strcpy(pVentas[indicePV].nombre_preparacion,demandas[i].nombre_preparacion);
-            while(validarIngredientes(recetas[indiceReceta],stock,sValidos) && n < demandas[i].cantidad)
-            {
-                descontarIngredientesPorReceta(recetas[indiceReceta].ingredientes,recetas[indiceReceta].cantIngredientes,stock,sValidos);
+        strcpy(pVentas[indicePV].nombre_preparacion,demandas[i].nombre_preparacion);
+        while(validarIngredientes(recetas[indiceReceta],stock,sValidos) && n < demandas[i].cantidad)
+        {
+            descontarIngredientesPorReceta(recetas[indiceReceta].ingredientes,recetas[indiceReceta].cantIngredientes,stock,sValidos);
 
-                pVentas[indicePV].cantidad++;
-                n++;
-            }
-            n=0;
+            pVentas[indicePV].cantidad++;
+            n++;
+        }
+        n=0;
         indicePV++;
     }
     *pvValidos = indicePV;
@@ -291,6 +293,58 @@ void registrarPreparadosVenta(PreparacionVenta pv[],int validosPV)
         fclose(fp);
     }
 }
+
+void mostrarArregloDemandas(Preparacion arreglo[],int validos)
+{
+
+    printf("\nDemandas:");
+
+    for(int i=0 ; i<validos ; i++)
+    {
+        printf("\n----------------------------------------\n");
+        printf("Producto: %s",arreglo[i].nombre_preparacion);
+        printf("\nCantidad: %i",arreglo[i].cantidad);
+        printf("\n----------------------------------------\n");
+    }
+
+
+
+
+}
+void mostrarArregloRecetas(Receta arreglo[],int validos)
+{
+    printf("\nRecetas:");
+
+    for(int i=0 ; i<validos ; i++)
+    {
+        printf("\n----------------------------------------------------\n");
+        printf("Nombre receta: %s\n",arreglo[i].nombre_preparacion);
+        printf("\nIngredientes receta:\n");
+
+        for(int j=0 ; j<arreglo[i].cantIngredientes ; j++)
+        {
+            printf("\t- %s ",arreglo[i].ingredientes[j].nombre_ingrediente);
+            printf("--> Cantidad: %.2f\n",arreglo[i].ingredientes[j].cantidad);
+        }
+        printf("\n----------------------------------------------------\n");
+    }
+
+}
+void mostrarPreparadosVentas(PreparacionVenta arreglo[],int validos)
+{
+    printf("\nPreparados Ventas:");
+
+    for(int i=0 ; i<validos ; i++)
+    {
+        printf("\n----------------------------------------\n");
+        printf("Producto: %s",arreglo[i].nombre_preparacion);
+        printf("\nCantidad: %i",arreglo[i].cantidad);
+        printf("\n----------------------------------------\n");
+    }
+
+
+}
+
 int main()
 {
     Preparacion demandas[N];
@@ -304,7 +358,7 @@ int main()
 
     ///Paso 1
     obtenerStockIngredientes(stockIngredientes,&validosStock);
-   // mostrarStockIngredientes(stockIngredientes,validosStock);
+    // mostrarStockIngredientes(stockIngredientes,validosStock);
 
     //Inicio del paso 2
     obtenerDemanda(demandas,&validosDem);
@@ -312,6 +366,11 @@ int main()
     prepararDemandas(demandas,validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,&validosPV);
 
     registrarPreparadosVenta(preparacionesVenta,validosPV);
+
+    mostrarArregloDemandas(demandas,validosDem);
+    mostrarArregloRecetas(recetas,validosRec);
+    mostrarPreparadosVentas(preparacionesVenta,validosPV);
+
     //Fin del paso 2
 
     return 0;
