@@ -5,6 +5,7 @@
 #define DEMANDA "demanda.bin"
 #define RECETAS "recetas.bin"
 #define STOCK "stockingredientes.bin"
+#define PVENTAS "pventas.bin"
 #define N 100
 
 /**
@@ -261,12 +262,12 @@ int main()
     int validosDem=0;
     Receta recetas[N];
     int validosRec=0;
-    StockIngrediente stockIng[N];
-    int validosIng=0;
+    StockIngrediente stockIngredientes[N];
+    int validosStock=0;
     PreparacionVenta preparacionesVenta[N];
     int validosPV=0;
 
-    obtenerStockIngredientes(stockIng,&validosIng);
+    obtenerStockIngredientes(stockIngredientes,&validosStock);
 
     //Inicio del paso 2
     obtenerDemanda(demandas,&validosDem);
