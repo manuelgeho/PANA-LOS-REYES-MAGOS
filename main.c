@@ -72,8 +72,14 @@ typedef struct ///Recetas
   float valor_total; ///valor total a pagar
 }Venta;
 
+
+///////////////////PASO 1/////////////////////////////////////////
+
 void obtenerStockIngredientes(StockIngrediente[],int*);
 void menuResumenDelDia();
+void mostrarUnIngrediente(StockIngrediente);
+void mostrarStockIngredientes(StockIngrediente[],int);
+
 
 void obtenerStockIngredientes(StockIngrediente stockIng[],int* validosIng)
 {
@@ -95,6 +101,35 @@ void obtenerStockIngredientes(StockIngrediente stockIng[],int* validosIng)
     }
     else
         printf("No se pudo abrir el archivo StockIngredientes");
+}
+
+void mostrarStockIngredientes(StockIngrediente stockIng[],int validos)
+{
+    printf("\nStock de Ingredientes\n");
+    for(int i=0 ; i<validos ; i++)
+    {
+        mostrarUnIngrediente(stockIng[i]);
+    }
+}
+
+void mostrarUnIngrediente(StockIngrediente ingrediente)
+{
+    printf("\n------------------------------------------\n");
+    printf("Ingrediente: %s",ingrediente.nombre_ingrediente);
+    if(strcmpi("liquido",ingrediente.tipo) == 0)
+    {
+        printf("\nCantidad: %.2f ml",ingrediente.cantidad);
+        printf("\nTipo: %s",ingrediente.tipo);
+        printf("\nCosto: $ %.2f /l",ingrediente.costo);
+    }
+    else
+    {
+        printf("\nCantidad: %.2f kg",ingrediente.cantidad);
+        printf("\nTipo: %s",ingrediente.tipo);
+        printf("\nCosto: $ %.2f /kg",ingrediente.costo);
+    }
+
+    printf("\n------------------------------------------\n");
 }
 
 void menuResumenDelDia()
@@ -267,7 +302,9 @@ int main()
     PreparacionVenta preparacionesVenta[N];
     int validosPV=0;
 
+    ///Paso 1
     obtenerStockIngredientes(stockIngredientes,&validosStock);
+   // mostrarStockIngredientes(stockIngredientes,validosStock);
 
     //Inicio del paso 2
     obtenerDemanda(demandas,&validosDem);
