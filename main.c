@@ -236,7 +236,6 @@ void descontarIngredientesPorReceta(IngredienteXReceta ingredientesDeReceta[],in
 
     for(int ingrediente=0; ingrediente < iValidos; ingrediente++)
     {
-        //printf("\n%s",ingredientesDeReceta[ingrediente].nombre_ingrediente);
         descontarUnIngrediente(ingredientesDeReceta[ingrediente],stock,sValidos);
     }
 }
@@ -248,9 +247,7 @@ void descontarUnIngrediente(IngredienteXReceta ingrediente,StockIngrediente stoc
     {
         if(strcmpi(ingrediente.nombre_ingrediente,stock[ingStock].nombre_ingrediente)==0)
         {
-            //printf("\nCantidad stock original: %.2f",stock[ingStock].cantidad);
             stock[ingStock].cantidad -= ingrediente.cantidad;
-            // printf("\nCantidad stock final: %.2f",stock[ingStock].cantidad);
         }
     }
 }
@@ -274,11 +271,10 @@ void prepararDemandas(Preparacion demandas[],int dValidos,Receta recetas[],int r
     for(int i=0; i<dValidos; i++)
     {
         indiceReceta= buscarRecetaPorNombre(demandas[i].nombre_preparacion,recetas,rValidos);
-        // printf("\n%s",demandas[i].nombre_preparacion);
+
         strcpy(pVentas[indicePV].nombre_preparacion,demandas[i].nombre_preparacion);
         while(validarIngredientes(recetas[indiceReceta],stock,sValidos) && n < demandas[i].cantidad)
         {
-            //printf("\nPreparado numero %i",n);
             descontarIngredientesPorReceta(recetas[indiceReceta].ingredientes,recetas[indiceReceta].cantIngredientes,stock,sValidos);
 
             pVentas[indicePV].cantidad++;
@@ -290,7 +286,6 @@ void prepararDemandas(Preparacion demandas[],int dValidos,Receta recetas[],int r
         }
         n=0;
         indicePV++;
-        // system("PAUSE");
     }
     *pvValidos = indicePV;
 }
