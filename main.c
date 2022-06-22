@@ -70,6 +70,7 @@ typedef struct /// Pedido Preparación
 
 typedef struct ///Venta
 {
+    int idVenta;
     PedidoPreparacion items_pedido[20]; ///puedo pedir hasta 20 items
     int cantItems;
     float valor_total; ///valor total a pagar
@@ -126,6 +127,12 @@ void mostrarUnIngrediente(StockIngrediente ingrediente)
         printf("\nCantidad: %.2f ml",ingrediente.cantidad);
         printf("\nTipo: %s",ingrediente.tipo);
         printf("\nCosto: $ %.2f /l",ingrediente.costo);
+    }
+    else if(strcmpi(ingrediente.nombre_ingrediente,"huevo") == 0)
+    {
+        printf("\nCantidad: %.2f u",ingrediente.cantidad);
+        printf("\nTipo: %s",ingrediente.tipo);
+        printf("\nCosto: $ %.2f /u",ingrediente.costo);
     }
     else
     {
@@ -368,12 +375,15 @@ int buscarPrecioPorNombre(char[],PrecioPreparacion[],int);
 
 
 ///Cada venta debe registrarse en el archivo “ventas.bin”
-void registrarVentas();
-void ingresarVentas(Venta[],int*,PrecioPreparacion[],int,PreparacionVenta[],int);
+void registrarVentas(PrecioPreparacion[],int,PreparacionVenta[],int);
+//void ingresarVentas(Venta[],int*,PrecioPreparacion[],int,PreparacionVenta[],int);
 void nuevaVenta(Venta* v,PrecioPreparacion[],int,PreparacionVenta preparacionesVenta[],int validosPV);
 void ingresarPedidoPreparacion(PedidoPreparacion*,PreparacionVenta[],int);
 int validarNombreProducto(char[],PreparacionVenta[],int);
-void obtenerVentas(Venta[],int*);
+//void obtenerVentas(Venta[],int*);
+void mostrarVentas();
+void mostrarUnaVenta(Venta);
+void mostrarPedidoPreparacion(PedidoPreparacion[],int);
 
 ///Por cada venta, se debe descontar del stock de preparados, hay que tener en
 ///cuenta que puede quedarse sin stock de algún preparado.
@@ -383,10 +393,9 @@ void descontarStockPreparados(char[],int,PreparacionVenta[],int);
 ///El usuario se puede arrepentir de una compra, por lo tanto deberíamos poder
 ///eliminar una venta generada, esto implica que en el archivo de ventas se pueda
 ///hacer una “baja lógica”, por lo tanto deberia agregar un campo en la estructura de Venta.
-void actualizarVentas(Venta[],int);
-void mostrarVentas(Venta[],int);
-void mostrarUnaVenta(Venta);
-void mostrarPedidoPreparacion(PedidoPreparacion[],int);
+void modificarVentas();
+int cantVentas();
+
 
 /////////////////////implementaciones Paso 3//////////////////////////
 void registrarPrecios(PrecioPreparacion precios[],int validosPP)
@@ -525,16 +534,37 @@ void obtenerPrecios(PrecioPreparacion precios[],int* validosPP)
         printf("No se pudo abrir el archivo en modo lectura");
 }
 
-void registrarVentas(Venta ventas[],int validosV)
+void registrarVentas(PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
 {
     FILE* fp;
+    Venta v;
+    int i=0;
+    char op;
 
-    fp = fopen(VENTAS,"wb");
+    fp = fopen(VENTAS,"ab");  ///agrego cada venta al final
+
+    i = cantVentas() + 1; ///para saber que valor va a tener el id del pedido
+
 
     if(fp!=NULL)
     {
 
-        fwrite(ventas,sizeof(Venta),validosV,fp);
+        nuevaVenta(&v,precios,validosPP,preparacionesVenta,validosPV);
+
+        v.idVenta = i;
+
+        mostrarUnaVenta(v);
+
+        printf("Desea confirmar el pedido? s/n \n");  ///se podria sacar esto
+        fflush(stdin);
+        scanf("%c",&op);
+
+        if(op != 's' && op != 'S') ///si no confirma el pedido, cancelado=1
+        {
+            v.cancelado = 1;
+        }
+
+        fwrite(&v,sizeof(Venta),1,fp);
 
         fclose(fp);
     }
@@ -547,6 +577,8 @@ void nuevaVenta(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVe
     int i=0,indice=0;
     char op='s';
     float total=0;
+
+    printf("\nIngrese el pedido:\n");
 
     while(i<20 && (op == 's' || op == 'S'))
     {
@@ -600,7 +632,7 @@ void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta prepar
         }
 }
 
-void ingresarVentas(Venta ventas[],int* validosV,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
+/*void ingresarVentas(Venta ventas[],int* validosV,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
 {
     int i=*validosV; ///puedo agregar ventas
     char op='s';
@@ -629,8 +661,8 @@ void ingresarVentas(Venta ventas[],int* validosV,PrecioPreparacion precios[],int
     }
 
     *validosV = i;
-}
-void obtenerVentas(Venta ventas[],int* validosV)
+}*/
+/*void obtenerVentas(Venta ventas[],int* validosV)
 {
     FILE* fp;
     int i=0;
@@ -657,7 +689,7 @@ void obtenerVentas(Venta ventas[],int* validosV)
     else
         printf("No se pudo abrir el archivo en modo lectura");
 
-}
+}*/
 
 int hayStockPreparado(char nombre[],int cantidad,PreparacionVenta preparacionesVenta[],int validosPV)  ///devuelve 1 si hay stock
 {
@@ -704,16 +736,61 @@ void descontarStockPreparados(char nombre[],int cantidad,PreparacionVenta prepar
     preparacionesVenta[i].cantidad -= cantidad;
 }
 
-void actualizarVentas(Venta ventas[],int validosV)
+int cantVentas()
 {
     FILE* fp;
+    int cant=0;
 
-    fp = fopen(VENTAS,"wb");
+    fp = fopen(VENTAS,"rb");
 
     if(fp != NULL)
     {
+        fseek(fp,0,SEEK_END); ///me posiciono al final del archivo;
 
-        fwrite(ventas,sizeof(Venta),validosV,fp);
+        cant = ftell(fp)/sizeof(Venta);
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo lectura");
+
+    return cant;
+}
+
+void modificarVentas()
+{
+    FILE* fp;
+    int id=0,i=0,validos=0;
+    Venta v;
+
+    fp = fopen(VENTAS,"r+b");
+
+    printf("\nIngrese el id del pedido a cancelar:  ");
+    scanf("%i",&id);
+
+    validos = cantVentas();
+
+    if(fp != NULL)
+    {
+        fread(&v,sizeof(Venta),1,fp);
+
+        while( (i < validos) && v.idVenta != id)///busco el id
+        {
+            fread(&v,sizeof(Venta),1,fp);
+            i++;
+        }
+
+        if(i < validos)
+        {
+            v.cancelado = 1;
+
+            fseek(fp,sizeof(Venta)*(-1),SEEK_CUR); /// me posicion antes de esa variable
+
+            fwrite(&v,sizeof(Venta),1,fp);///sobreescribo
+        }
+        else
+            printf("\nNo existe el id ingresado");
+
 
         fclose(fp);
     }
@@ -722,12 +799,26 @@ void actualizarVentas(Venta ventas[],int validosV)
 
 }
 
-void mostrarVentas(Venta ventas[],int validosV)
+void mostrarVentas()
 {
-    for(int i=0 ; i<validosV ; i++)
+    FILE* fp;
+    Venta v;
+
+    fp = fopen(VENTAS,"rb");
+
+    if(fp != NULL)
     {
-        mostrarUnaVenta(ventas[i]);
+        while( fread(&v,sizeof(Venta),1,fp) > 0)
+        {
+            if(v.cancelado == 0)
+                mostrarUnaVenta(v);
+        }
+
+        fclose(fp);
     }
+    else
+        printf("No se pudo abrir el archivo en modo lectura");
+
 }
 void mostrarPedidoPreparacion(PedidoPreparacion pedidos[],int validos)
 {
@@ -740,7 +831,8 @@ void mostrarPedidoPreparacion(PedidoPreparacion pedidos[],int validos)
 void mostrarUnaVenta(Venta v)
 {
         printf("\n---------------------------------------------\n");
-        printf("Items pedido:\n");
+        printf("Id venta: %i",v.idVenta);
+        printf("\nItems pedido:\n");
         mostrarPedidoPreparacion(v.items_pedido,v.cantItems);
         printf("\nTotal: $ %.2f",v.valor_total);
         printf("\n---------------------------------------------\n");
@@ -757,8 +849,6 @@ int main()
     int validosPV=0;
     PrecioPreparacion precioPreparaciones[N];
     int validosPP=0;
-    Venta ventas[N];
-    int validosV=0;
 
 
     ///Paso 1
@@ -795,22 +885,12 @@ int main()
     //  mostrarPrecios(precioPreparaciones,validosPP);
 
 
-    ///ingreso las ventas en un arreglo
-    ingresarVentas(ventas,&validosV,precioPreparaciones,validosPP,preparacionesVenta,validosPV);
-    //mostrarVentas(ventas,validosV);
+    ///ingreso las ventas
+    registrarVentas(precioPreparaciones,validosPP,preparacionesVenta,validosPV); ///agrega una venta por vez
+    mostrarVentas();
 
-    ///guardo en un archivo
-    registrarVentas(ventas,validosV);
-
-    ///en caso de agregar una venta, sobreescribo el archivo con la nueva venta
-    //ingresarVentas
-    //registrarVentas
-
-    ///actualizo el archivo en caso de que haya pedidos cancelados
-    obtenerVentas(ventas,&validosV);
-    actualizarVentas(ventas,validosV);
-
-    mostrarVentas(ventas,validosV);
+    modificarVentas();
+    mostrarVentas();
 
 
     return 0;
