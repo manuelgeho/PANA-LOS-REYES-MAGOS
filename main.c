@@ -558,9 +558,9 @@ void nuevaVenta(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVe
 
             total += (*v).items_pedido[i].cantidad * precios[indice].precio_venta;
 
-            i++;
-
             descontarStockPreparados((*v).items_pedido[i].nombre_preparacion,(*v).items_pedido[i].cantidad,preparacionesVenta,validosPV);
+
+            i++;
         }
 
 
@@ -640,8 +640,6 @@ void obtenerVentas(Venta ventas[],int* validosV)
 
     if(fp!=NULL)
     {
-        system("PAUSE");
-
         while(fread(&ventas[i],sizeof(Venta),1,fp) > 0)
         {
             if(ventas[i].cancelado == 0) ///guardo en el arreglo si no esta cancelado
