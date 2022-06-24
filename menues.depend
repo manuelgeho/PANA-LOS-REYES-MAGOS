@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1655922473 source:c:\users\sinta\desktop\menues\main.c
+	<stdio.h>
+	<stdlib.h>
+	<conio.h>
+	<windows.h>
+
