@@ -3,6 +3,14 @@
 #include <conio.h>
 #include <windows.h>
 
+#define DEMANDA "demanda.bin"
+#define RECETAS "recetas.bin"
+#define STOCK "stockingredientes.bin"
+#define PVENTAS "pventas.bin"
+#define PRECIOS "precios.bin"
+#define VENTAS "ventas.bin"
+
+#define N 100
 #define UP 72
 #define DOWN 80
 #define ENTER 13
@@ -17,8 +25,8 @@ void menuResumenDelDia();
 void menuStockIngredientes();
 void menuRecetas();
 void menuVentas();
-void obtenerVentas(float[], int*)
-float ingresoDelDia(float [], int );
+void obtenerVentas(float[], int*); //pasa a un array las ventas del arch VENTAS
+float ingresoDelDia(float [], int ); // sumatoria de ingresos x vta usando func anterior
 
 //implementacion menues
 void gotoxy(int x, int y) //recibe coordenadas de colocacion de cursor
@@ -463,13 +471,17 @@ void obtenerVentas(float registroVentas[], int* validosRV)
 
     if( fp != NULL)
     {
-        while( fread(&aux,sizeof(float),1,fp) > 0 )
+        while( i < N &&fread(&aux,sizeof(float),1,fp) > 0 )
         {
             registroVentas[i] = aux;
             i++;
         }
 
         *validosRV = i;
+    }
+    else
+    {
+        printf("NO");
     }
 
 
