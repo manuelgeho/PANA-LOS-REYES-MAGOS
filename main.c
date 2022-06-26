@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <windows.h>
+#include <string.h>
 
 #define DEMANDA "demanda.bin"
 #define RECETAS "recetas.bin"
@@ -9,6 +10,7 @@
 #define PVENTAS "pventas.bin"
 #define PRECIOS "precios.bin"
 #define VENTAS "ventas.bin"
+#define COSTOS "costos.bin"
 
 #define N 100
 #define UP 72
@@ -205,7 +207,7 @@ void menuResumenDelDia()
         case 1:
             printf("REMANENTE STOCK INGREDIENTES:\n");
 
-            mostrarStockIngredientes(stockIng[], validos);
+          //  mostrarStockIngredientes(stockIng, validos);
 
             break;
 
@@ -224,7 +226,7 @@ void menuResumenDelDia()
         case 4:
             printf("GANANCIA DEL DIA\n");
 
-            break:
+            break;
 
         case 5:
             menuGeneral();
@@ -341,6 +343,7 @@ void menuVentas()
 {
     char icono, comprobante, confirmacion;
     int teclaMov, x, y, ingresoSubmenu;
+    float agarrarCosto;
     icono = 16;
     x = 1;
     y = 3;
@@ -396,8 +399,8 @@ void menuVentas()
                 prepararDemandas(demandas,validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,&validosPV);
                 nuevaVenta(&v, precios[],validosPP, preparacionesVenta[],validosPV);
                 registrarVentas(precioPreparaciones,validosPP,preparacionesVenta,validosPV);
+                costosTotales(*v, precios[], validosPP, preparacionesVenta, validosPV, nombre[], stockIngredientes[], validosStock,recetas[],validosRec);
                 mostrarUnaVenta(venta);
-
 
 
                 break;
@@ -501,6 +504,30 @@ float ingresoDelDia(float registroVentas[], int validosRV)
 
     return sumatoriaIngresos;
 }
+float costosTotales(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV, char nombre[],StockIngrediente stockIngredientes[],int validosStock,Receta recetas[],int validosRec)
+{
+    agarrarCosto = costoPreparacion(nombre[],stockIngredientes[],validosStock,recetas[],validosRec)
+
+    float sumatoriaCostos, agarrarCosto;
+
+    if (nuevaVenta())
+    {
+        sumatoriaCostos =+ agarrarCosto;
+    }
+  return sumatoriaCostos;
+}
+void gananciaDelDia();
+{
+    float ingresos, costos, gananciaDelDia;
+    ingresos = 0;
+    costos = 0;
+    gananciaDelDia = 0;
+    ingresos = ingresoDelDia(registroVentas[], validosRV);
+    costos = costosTotales(*v, precios[], validosPP, preparacionVenta[], validosPV, nombre[], stockIngredientes[], validosStock, cetas[], validosRec);
+    gananciaDelDia = ingresos - costos;
+    printf("La ganancia del d%ca es de: $%.2f", 161, gananciaDelDia);
+}
+
 
     int main()
     {
