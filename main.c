@@ -29,6 +29,8 @@ void menuRecetas();
 void menuVentas();
 void obtenerVentas(float[], int*); //pasa a un array las ventas del arch VENTAS
 float ingresoDelDia(float [], int ); // sumatoria de ingresos x vta usando func anterior
+void gananciaDelDia();
+float costosTotales(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char, StockIngrediente,int ,Receta ,int )
 
 //implementacion menues
 void gotoxy(int x, int y) //recibe coordenadas de colocacion de cursor
