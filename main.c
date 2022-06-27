@@ -6,6 +6,9 @@
 #define RECETAS "recetas.bin"
 #define STOCK "stockingredientes.bin"
 #define PVENTAS "pventas.bin"
+#define PRECIOS "precios.bin"
+#define VENTAS "ventas.bin"
+
 #define N 100
 
 /**
@@ -67,10 +70,13 @@ typedef struct /// Pedido Preparación
 
 typedef struct ///Venta
 {
+    int idVenta;
     PedidoPreparacion items_pedido[20]; ///puedo pedir hasta 20 items
     int cantItems;
     float valor_total; ///valor total a pagar
+    int cancelado; ///si cancelado=1 , se cancelo el pedido
 } Venta;
+
 
 
 ///////////////////PASO 1/////////////////////////////////////////
@@ -121,6 +127,12 @@ void mostrarUnIngrediente(StockIngrediente ingrediente)
         printf("\nCantidad: %.2f ml",ingrediente.cantidad);
         printf("\nTipo: %s",ingrediente.tipo);
         printf("\nCosto: $ %.2f /l",ingrediente.costo);
+    }
+    else if(strcmpi(ingrediente.nombre_ingrediente,"huevo") == 0)
+    {
+        printf("\nCantidad: %.2f u",ingrediente.cantidad);
+        printf("\nTipo: %s",ingrediente.tipo);
+        printf("\nCosto: $ %.2f /u",ingrediente.costo);
     }
     else
     {
@@ -228,6 +240,7 @@ int validarIngredientes(Receta receta,StockIngrediente stock[],int stockValidos)
 //Descuenta del stock, todos los ingredientes que se le pasen en un arreglo de ingredientes.
 void descontarIngredientesPorReceta(IngredienteXReceta ingredientesDeReceta[],int iValidos,StockIngrediente stock[],int sValidos)
 {
+
     for(int ingrediente=0; ingrediente < iValidos; ingrediente++)
     {
         descontarUnIngrediente(ingredientesDeReceta[ingrediente],stock,sValidos);
@@ -265,6 +278,7 @@ void prepararDemandas(Preparacion demandas[],int dValidos,Receta recetas[],int r
     for(int i=0; i<dValidos; i++)
     {
         indiceReceta= buscarRecetaPorNombre(demandas[i].nombre_preparacion,recetas,rValidos);
+
         strcpy(pVentas[indicePV].nombre_preparacion,demandas[i].nombre_preparacion);
         while(validarIngredientes(recetas[indiceReceta],stock,sValidos) && n < demandas[i].cantidad)
         {
@@ -272,6 +286,10 @@ void prepararDemandas(Preparacion demandas[],int dValidos,Receta recetas[],int r
 
             pVentas[indicePV].cantidad++;
             n++;
+
+
+
+
         }
         n=0;
         indicePV++;
@@ -345,6 +363,480 @@ void mostrarPreparadosVentas(PreparacionVenta arreglo[],int validos)
 
 }
 
+///////////////////PASO 3/////////////////////////////////////////
+void registrarPrecios(PrecioPreparacion[],int);
+void cargarPrecios(PreparacionVenta [],PrecioPreparacion [],int,StockIngrediente [],int,Receta [],int);
+void mostrarPrecios(PrecioPreparacion[],int);
+void modificarPrecios(PrecioPreparacion[],int);
+void obtenerPrecios(PrecioPreparacion[],int*);
+float costoPreparacion(char[],StockIngrediente[],int,Receta[],int);
+int buscarStockPorNombre(char[],StockIngrediente[],int);
+int buscarPrecioPorNombre(char[],PrecioPreparacion[],int);
+
+
+///Cada venta debe registrarse en el archivo “ventas.bin”
+void registrarVentas(PrecioPreparacion[],int,PreparacionVenta[],int);
+//void ingresarVentas(Venta[],int*,PrecioPreparacion[],int,PreparacionVenta[],int);
+void nuevaVenta(Venta* v,PrecioPreparacion[],int,PreparacionVenta preparacionesVenta[],int validosPV);
+void ingresarPedidoPreparacion(PedidoPreparacion*,PreparacionVenta[],int);
+int validarNombreProducto(char[],PreparacionVenta[],int);
+//void obtenerVentas(Venta[],int*);
+void mostrarVentas();
+void mostrarUnaVenta(Venta);
+void mostrarPedidoPreparacion(PedidoPreparacion[],int);
+
+///Por cada venta, se debe descontar del stock de preparados, hay que tener en
+///cuenta que puede quedarse sin stock de algún preparado.
+int hayStockPreparado(char[],int,PreparacionVenta[],int);
+void descontarStockPreparados(char[],int,PreparacionVenta[],int);
+
+///El usuario se puede arrepentir de una compra, por lo tanto deberíamos poder
+///eliminar una venta generada, esto implica que en el archivo de ventas se pueda
+///hacer una “baja lógica”, por lo tanto deberia agregar un campo en la estructura de Venta.
+void modificarVentas();
+int cantVentas();
+
+
+/////////////////////implementaciones Paso 3//////////////////////////
+void registrarPrecios(PrecioPreparacion precios[],int validosPP)
+{
+    FILE* fp;
+
+    fp = fopen(PRECIOS,"wb");
+
+    if(fp!=NULL)
+    {
+        fwrite(precios,sizeof(PrecioPreparacion),validosPP,fp);
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo escritura");
+}
+void cargarPrecios(PreparacionVenta preparacionesVentas[],PrecioPreparacion precios[],int validosPV,StockIngrediente stockIngredientes[],int validosStock,Receta recetas[],int validosRec)
+{
+    float costo;
+
+    for(int i=0 ; i<validosPV; i++)
+    {
+        strcpy(precios[i].nombre_preparacion,preparacionesVentas[i].nombre_preparacion);
+        costo = costoPreparacion(precios[i].nombre_preparacion,stockIngredientes,validosStock,recetas,validosRec);
+        precios[i].precio_venta = 1.5 * costo;
+    }
+}
+void mostrarPrecios(PrecioPreparacion precios[],int validos)
+{
+    printf("\nLISTA DE PRECIOS\n");
+    for(int i = 0 ; i<validos ; i++)
+    {
+        printf("\n----------------------------------------\n");
+        printf("Preparacion: %s",precios[i].nombre_preparacion);
+        printf("\nPrecio: $ %.2f",precios[i].precio_venta);
+        printf("\n----------------------------------------\n");
+    }
+}
+
+int buscarStockPorNombre(char nombreIngrediente[],StockIngrediente stockIngredientes[],int validosStock)
+{
+    int i=0;
+    while(i < validosStock && strcmpi(stockIngredientes[i].nombre_ingrediente,nombreIngrediente)!=0)
+    {
+        i++;
+    }
+    return i;
+}
+float costoPreparacion(char nombre[],StockIngrediente stockIngredientes[],int validosStock,Receta recetas[],int validosRec)
+{
+    int indiceReceta=0,indiceStock=0;
+    float costo=0;
+
+    indiceReceta = buscarRecetaPorNombre(nombre,recetas,validosRec);
+
+    for(int j=0 ; j<recetas[indiceReceta].cantIngredientes ; j++)
+    {
+        indiceStock = buscarStockPorNombre(recetas[indiceReceta].ingredientes[j].nombre_ingrediente,stockIngredientes,validosStock);
+
+        costo += recetas[indiceReceta].ingredientes[j].cantidad * stockIngredientes[indiceStock].costo;
+    }
+
+
+    return costo;
+}
+void modificarPrecios(PrecioPreparacion precios[],int validosPP)
+{
+    char op;
+    char nombre[30];
+    int indice=0;
+
+    do
+    {
+        printf("Ingrese el nombre de la producto a modificar el precio:  ");
+        fflush(stdin);
+        gets(nombre);
+
+
+        indice = buscarPrecioPorNombre(nombre,precios,validosPP);
+
+        if(indice != -1)
+        {
+            printf("\nIngrese el nuevo precio:  ");
+            scanf("%f",&(precios[indice].precio_venta));
+        }
+        else
+            printf("No existe un producto con tal nombre");
+
+
+        printf("\nDesea modificar otro precio? s/n \n");
+        fflush(stdin);
+        scanf("%c",&op);
+
+    }
+    while(op == 's' || op == 'S');
+
+    registrarPrecios(precios,validosPP);
+}
+
+int buscarPrecioPorNombre(char nombre[],PrecioPreparacion precios[],int validosPP)
+{
+    int i=0;
+
+    while(i<validosPP && strcmpi(nombre,precios[i].nombre_preparacion) != 0)
+    {
+        i++;
+    }
+
+    if(i >= validosPP)
+        i=-1;
+
+    return i;
+}
+
+
+void obtenerPrecios(PrecioPreparacion precios[],int* validosPP)
+{
+    FILE* fp;
+    int i=0;
+
+    fp = fopen(PRECIOS,"rb");
+
+    if( fp != NULL)
+    {
+        while(fread(&precios[i],sizeof(PrecioPreparacion),1,fp) > 0)
+        {
+            i++;
+        }
+
+        *validosPP = i;
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo lectura");
+}
+
+void registrarVentas(PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
+{
+    FILE* fp;
+    Venta v;
+    int i=0;
+    char op;
+
+    fp = fopen(VENTAS,"ab");  ///agrego cada venta al final
+
+    i = cantVentas() + 1; ///para saber que valor va a tener el id del pedido
+
+
+    if(fp!=NULL)
+    {
+
+        nuevaVenta(&v,precios,validosPP,preparacionesVenta,validosPV);
+
+        v.idVenta = i;
+
+        mostrarUnaVenta(v);
+
+        printf("Desea confirmar el pedido? s/n \n");  ///se podria sacar esto
+        fflush(stdin);
+        scanf("%c",&op);
+
+        if(op != 's' && op != 'S') ///si no confirma el pedido, cancelado=1
+        {
+            v.cancelado = 1;
+        }
+
+        fwrite(&v,sizeof(Venta),1,fp);
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo escritura");
+}
+void nuevaVenta(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
+{
+
+    int i=0,indice=0;
+    char op='s';
+    float total=0;
+
+    printf("\nIngrese el pedido:\n");
+
+    while(i<20 && (op == 's' || op == 'S'))
+    {
+        ingresarPedidoPreparacion(&((*v).items_pedido[i]),preparacionesVenta,validosPV);
+
+        if((*v).items_pedido[i].cantidad != 0) ///si en cantidad tengo 0, es porque se anulo el pedido especifico de un producto,
+        {                                   /// asi que no incremento i
+            indice = buscarPrecioPorNombre((*v).items_pedido[i].nombre_preparacion,precios,validosPP);
+
+            total += (*v).items_pedido[i].cantidad * precios[indice].precio_venta;
+
+            descontarStockPreparados((*v).items_pedido[i].nombre_preparacion,(*v).items_pedido[i].cantidad,preparacionesVenta,validosPV);
+
+            i++;
+        }
+
+
+        printf("\nDesea comprar otro producto? s/n \n");
+        fflush(stdin);
+        scanf("%c",&op);
+    }
+
+    (*v).cantItems = i;
+    (*v).valor_total = total;
+    (*v).cancelado=0;
+
+
+}
+void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta preparacionesVenta[],int validosPV)
+{
+
+
+        printf("\nIngrese el nombre del producto:  ");
+        fflush(stdin);
+        gets((*pedido).nombre_preparacion);
+
+        while(!validarNombreProducto((*pedido).nombre_preparacion,preparacionesVenta,validosPV))
+        {
+            printf("\nNo existe el producto ingresado. Ingrese el nombre del producto:  ");
+            fflush(stdin);
+            gets((*pedido).nombre_preparacion);
+        }
+
+        printf("\nIngrese la cantidad:  ");
+        scanf("%i",&((*pedido).cantidad));
+
+        while(!hayStockPreparado((*pedido).nombre_preparacion,(*pedido).cantidad,preparacionesVenta,validosPV))
+        {
+            printf("\nIngrese una nueva cantidad o 0 para anular este pedido:  ");
+            scanf("%i",&((*pedido).cantidad));
+        }
+}
+
+/*void ingresarVentas(Venta ventas[],int* validosV,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
+{
+    int i=*validosV; ///puedo agregar ventas
+    char op='s';
+
+    printf("\n\nIngrese su pedido\n\n");
+
+    while(i<N && (op == 's' || op == 'S' ))
+    {
+        nuevaVenta(&ventas[i],precios,validosPP,preparacionesVenta,validosPV);
+        mostrarUnaVenta(ventas[i]);
+
+        printf("Desea confirmar el pedido? s/n \n");
+        fflush(stdin);
+        scanf("%c",&op);
+
+        if(op != 's' && op != 'S') ///si no confirma el pedido, cancelado=1
+        {
+            ventas[i].cancelado = 1;
+        }
+
+        i++;
+
+        printf("Desea agregar un nuevo pedido? s/n \n");
+        fflush(stdin);
+        scanf("%c",&op);
+    }
+
+    *validosV = i;
+}*/
+/*void obtenerVentas(Venta ventas[],int* validosV)
+{
+    FILE* fp;
+    int i=0;
+    Venta aux;
+
+    fp = fopen(VENTAS,"rb");
+
+    if(fp!=NULL)
+    {
+        while(fread(&ventas[i],sizeof(Venta),1,fp) > 0)
+        {
+            if(ventas[i].cancelado == 0) ///guardo en el arreglo si no esta cancelado
+            {
+                i++;
+            }
+        }
+
+        *validosV = i;
+
+        printf("Validos dentro de obtener: %i",*validosV);
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo lectura");
+
+}*/
+
+int hayStockPreparado(char nombre[],int cantidad,PreparacionVenta preparacionesVenta[],int validosPV)  ///devuelve 1 si hay stock
+{
+    int i=0,hay=0;
+
+    while(i<validosPV && strcmpi(nombre,preparacionesVenta[i].nombre_preparacion) != 0)
+    {
+        i++;
+    }
+
+    if(cantidad <= preparacionesVenta[i].cantidad)
+        hay = 1;
+    else
+        printf("\nNo hay Stock disponible. Disponible: %i",preparacionesVenta[i].cantidad);
+
+
+    return hay; ///si no hay stock devuelve 0
+}
+
+int validarNombreProducto(char nombre[],PreparacionVenta preparacionesVenta[],int validosPV)
+{
+    int existe=0,i=0;
+
+    while(i<validosPV && strcmpi(nombre,preparacionesVenta[i].nombre_preparacion) != 0)
+    {
+        i++;
+    }
+
+    if(i<validosPV)
+        existe=1;
+
+    return existe;
+
+}
+void descontarStockPreparados(char nombre[],int cantidad,PreparacionVenta preparacionesVenta[],int validosPV)
+{
+    int i=0;
+
+    while(i<validosPV && strcmpi(nombre,preparacionesVenta[i].nombre_preparacion) != 0)
+    {
+        i++;
+    }
+
+    preparacionesVenta[i].cantidad -= cantidad;
+}
+
+int cantVentas()
+{
+    FILE* fp;
+    int cant=0;
+
+    fp = fopen(VENTAS,"rb");
+
+    if(fp != NULL)
+    {
+        fseek(fp,0,SEEK_END); ///me posiciono al final del archivo;
+
+        cant = ftell(fp)/sizeof(Venta);
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo lectura");
+
+    return cant;
+}
+
+void modificarVentas()
+{
+    FILE* fp;
+    int id=0,i=0,validos=0;
+    Venta v;
+
+    fp = fopen(VENTAS,"r+b");
+
+    printf("\nIngrese el id del pedido a cancelar:  ");
+    scanf("%i",&id);
+
+    validos = cantVentas();
+
+    if(fp != NULL)
+    {
+        fread(&v,sizeof(Venta),1,fp);
+
+        while( (i < validos) && v.idVenta != id)///busco el id
+        {
+            fread(&v,sizeof(Venta),1,fp);
+            i++;
+        }
+
+        if(i < validos)
+        {
+            v.cancelado = 1;
+
+            fseek(fp,sizeof(Venta)*(-1),SEEK_CUR); /// me posicion antes de esa variable
+
+            fwrite(&v,sizeof(Venta),1,fp);///sobreescribo
+        }
+        else
+            printf("\nNo existe el id ingresado");
+
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo");
+
+}
+
+void mostrarVentas()
+{
+    FILE* fp;
+    Venta v;
+
+    fp = fopen(VENTAS,"rb");
+
+    if(fp != NULL)
+    {
+        while( fread(&v,sizeof(Venta),1,fp) > 0)
+        {
+            if(v.cancelado == 0)
+                mostrarUnaVenta(v);
+        }
+
+        fclose(fp);
+    }
+    else
+        printf("No se pudo abrir el archivo en modo lectura");
+
+}
+void mostrarPedidoPreparacion(PedidoPreparacion pedidos[],int validos)
+{
+    for(int i=0 ; i<validos ; i++)
+    {
+        printf("\t%15s --> Cantidad: %i\n",pedidos[i].nombre_preparacion,pedidos[i].cantidad);
+    }
+}
+
+void mostrarUnaVenta(Venta v)
+{
+        printf("\n---------------------------------------------\n");
+        printf("Id venta: %i",v.idVenta);
+        printf("\nItems pedido:\n");
+        mostrarPedidoPreparacion(v.items_pedido,v.cantItems);
+        printf("\nTotal: $ %.2f",v.valor_total);
+        printf("\n---------------------------------------------\n");
+}
 int main()
 {
     Preparacion demandas[N];
@@ -355,10 +847,13 @@ int main()
     int validosStock=0;
     PreparacionVenta preparacionesVenta[N];
     int validosPV=0;
+    PrecioPreparacion precioPreparaciones[N];
+    int validosPP=0;
+
 
     ///Paso 1
     obtenerStockIngredientes(stockIngredientes,&validosStock);
-    // mostrarStockIngredientes(stockIngredientes,validosStock);
+    mostrarStockIngredientes(stockIngredientes,validosStock);
 
     //Inicio del paso 2
     obtenerDemanda(demandas,&validosDem);
@@ -371,7 +866,32 @@ int main()
     mostrarArregloRecetas(recetas,validosRec);
     mostrarPreparadosVentas(preparacionesVenta,validosPV);
 
+    printf("\nStock restante:\n");
+    mostrarStockIngredientes(stockIngredientes,validosStock);
+
     //Fin del paso 2
+
+    ///Paso 3
+
+
+    //cargarPrecios(preparacionesVenta,precioPreparaciones,validosPV,stockIngredientes,validosStock,recetas,validosRec);
+    // validosPP = validosPV;
+    //registrarPrecios(precioPreparaciones,validosPP);
+    obtenerPrecios(precioPreparaciones,&validosPP);
+    mostrarPrecios(precioPreparaciones,validosPP);
+
+    //modificarPrecios(precioPreparaciones,validosPP);
+
+    //  mostrarPrecios(precioPreparaciones,validosPP);
+
+
+    ///ingreso las ventas
+    registrarVentas(precioPreparaciones,validosPP,preparacionesVenta,validosPV); ///agrega una venta por vez
+    mostrarVentas();
+
+    modificarVentas();
+    mostrarVentas();
+
 
     return 0;
 }
