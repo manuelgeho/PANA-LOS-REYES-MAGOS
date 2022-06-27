@@ -358,7 +358,7 @@ int buscarPrecioPorNombre(char[],PrecioPreparacion[],int);
 
 ///Cada venta debe registrarse en el archivo ventas.bin
 void registrarVentas(PrecioPreparacion[],int,PreparacionVenta[],int);
-//void ingresarVentas(Venta[],int*,PrecioPreparacion[],int,PreparacionVenta[],int);
+
 void nuevaVenta(Venta* v,PrecioPreparacion[],int,PreparacionVenta preparacionesVenta[],int validosPV);
 void ingresarPedidoPreparacion(PedidoPreparacion*,PreparacionVenta[],int);
 int validarNombreProducto(char[],PreparacionVenta[],int);
@@ -615,29 +615,7 @@ void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta prepar
     }
 }
 
-/*void ingresarVentas(Venta ventas[],int* validosV,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV)
-{
-    int i=*validosV; ///puedo agregar ventas
-    char op='s';
-    printf("\n\nIngrese su pedido\n\n");
-    while(i<N && (op == 's' || op == 'S' ))
-    {
-        nuevaVenta(&ventas[i],precios,validosPP,preparacionesVenta,validosPV);
-        mostrarUnaVenta(ventas[i]);
-        printf("Desea confirmar el pedido? s/n \n");
-        fflush(stdin);
-        scanf("%c",&op);
-        if(op != 's' && op != 'S') ///si no confirma el pedido, cancelado=1
-        {
-            ventas[i].cancelado = 1;
-        }
-        i++;
-        printf("Desea agregar un nuevo pedido? s/n \n");
-        fflush(stdin);
-        scanf("%c",&op);
-    }
-    *validosV = i;
-}*/
+
 /*void obtenerVentas(Venta ventas[],int* validosV)
 {
     FILE* fp;
@@ -829,19 +807,8 @@ void gotoxy(int x, int y) //recibe coordenadas de colocacion de cursor
     coordenada.X = x;
     coordenada.Y = y;
     SetConsoleCursorPosition (manipulador, coordenada); //recibe manipulador de buffer pantalla  y nvas coord del cursor
-
-
 }
-void menuGeneral(Preparacion demandas[],int* validosDem,Receta recetas[],int* validosRec,StockIngrediente stockIngredientes[],int* validosStock,Preparacion preparacionesVenta[],int* validosPV,PrecioPreparacion precioPreparaciones[],int* validosPP)
-{
 
-
-
-
-
-
-
-}
 void menuResumenDelDia(StockIngrediente stockIngredientes[], int validosIng)
 {
 
@@ -857,7 +824,7 @@ void menuResumenDelDia(StockIngrediente stockIngredientes[], int validosIng)
 
     //posicionamiento y muestra de menu
     gotoxy(0,0);
-    printf("\n----MENU RESUMEN DEL DIA\-----n");
+    printf("\n----MENU RESUMEN DEL DIA-----n");
     printf("\n1. Ver lista de remanentes de ingredientes en stock");
     printf("\n2. Ver lista de preparados y su cantidad que quedan en venta");
     printf("\n3. Ver el ingreso total del d%ca", 161);
@@ -903,6 +870,9 @@ void menuResumenDelDia(StockIngrediente stockIngredientes[], int validosIng)
 
             mostrarStockIngredientes(stockIngredientes, validosIng);
 
+            x = 1;
+            y = 3;
+
             break;
 
         case 2:
@@ -944,7 +914,7 @@ void menuStockIngredientes(StockIngrediente stockIngredientes[],int* validosStoc
 void menuRecetas(Receta recetas[],int* validosRec)
 {
     char icono;
-    int teclaMov, x, y, ingresoSubmenu, recetaEncontrada;
+    int teclaMov, x, y, ingresoSubmenu, recetaEncontrada,salir=0;
     char recetaBuscada[20];
     icono = 16;
     x = 1;
@@ -962,71 +932,90 @@ void menuRecetas(Receta recetas[],int* validosRec)
 
         printf("\t1) CARGAR RECETAS\n");
         printf("\t2) BUSCAR RECETAS\n");
-        printf("\t3) VOLVER AL MENU GENERAL");
-        teclaMov = getch();
+        printf("\n");
+        printf("\tPara salir presione la tecla Esc");
+        printf("\n\n");
+ingresoSubmenu = 1;
+        salir=0;
 
-        if (teclaMov == UP)
+
+        do
         {
-            gotoxy(x, y);
-            printf(" ");
-            y--; //
-            gotoxy(x, y);
-            printf("%c", icono);
-            ingresoSubmenu--;
+            teclaMov = getch();
 
-        }
-
-        else if (teclaMov == DOWN)
-        {
-            gotoxy(x, y);
-            printf(" ");
-            y++;
-            gotoxy(x, y);
-            printf("%c", icono);
-            ingresoSubmenu ++;
-        }
-
-        if (teclaMov == ENTER)
-        {
-            system("cls");
-
-            switch (ingresoSubmenu)
+            if (teclaMov == UP)
             {
-            case 1:
-
-                gotoxy(40, 15);
-                for (int i = 0; i<5; i++)
-                {
-                    gotoxy(40, 15);
-                    printf("Cargando recetas...");
-                    Sleep(300);
-                    system("cls");
-                    Sleep(300);
-                }
-
-                obtenerRecetas(recetas,validosRec);
-                mostrarArregloRecetas(recetas,*validosRec);
-                system("pause");
-                system("cls");
-
-                break;
-
-            case 2:
-
-                printf("Ingrese la receta que desea buscar:");
-                fflush(stdin);
-                gets(recetaBuscada);
-                recetaEncontrada = buscarRecetaPorNombre(recetaBuscada,recetas,*validosRec);
-                system("cls");
-                printf("%i \n", recetaEncontrada);
-                system("pause");
-                system("cls");
-
-                break;
+                gotoxy(x, y);
+                printf(" ");
+                y--;
+                gotoxy(x, y);
+                printf("%c", icono);
+                ingresoSubmenu--;
 
             }
 
+            else if (teclaMov == DOWN)
+            {
+                gotoxy(x, y);
+                printf(" ");
+                y++;
+                gotoxy(x, y);
+                printf("%c", icono);
+                ingresoSubmenu ++;
+            }
+
+            if (teclaMov == ENTER)
+            {
+                system("cls");
+
+                switch (ingresoSubmenu)
+                {
+                case 1:
+
+                    gotoxy(40, 15);
+                    for (int i = 0; i<5; i++)
+                    {
+                        gotoxy(40, 15);
+                        printf("Cargando recetas...");
+                        Sleep(300);
+                        system("cls");
+                        Sleep(300);
+                    }
+
+                    obtenerRecetas(recetas,validosRec);
+                    mostrarArregloRecetas(recetas,*validosRec);
+
+                    salir=1;
+                    x = 1;
+    y = 3;
+                    system("pause");
+                    system("cls");
+
+                    break;
+
+                case 2:
+
+                    printf("Ingrese la receta que desea buscar:");
+                    fflush(stdin);
+                    gets(recetaBuscada);
+                    recetaEncontrada = buscarRecetaPorNombre(recetaBuscada,recetas,*validosRec);
+                    system("cls");
+                    printf("%s \n", recetas[recetaEncontrada].nombre_preparacion);
+                    system("pause");
+                    system("cls");
+
+                    salir=1;
+                    x = 1;
+    y = 3;
+
+                    break;
+
+                }
+
+            }
         }
+        while(teclaMov!=ESC && salir!=1);
+
     }
     while (teclaMov != ESC);
 
@@ -1035,7 +1024,7 @@ void menuRecetas(Receta recetas[],int* validosRec)
 void menuVentas(Preparacion demandas[],int* validosDem,Receta recetas[],int validosRec,StockIngrediente stockIngredientes[],int validosStock,PreparacionVenta preparacionesVenta[],int* validosPV,PrecioPreparacion precioPreparaciones[],int* validosPP )
 {
     char icono, comprobante, confirmacion;
-    int teclaMov, x, y, ingresoSubmenu;
+    int teclaMov, x, y, ingresoSubmenu,salir=0;
     float agarrarCosto;
     icono = 16;
     x = 1;
@@ -1043,115 +1032,161 @@ void menuVentas(Preparacion demandas[],int* validosDem,Receta recetas[],int vali
     ingresoSubmenu = 1;
 
     gotoxy (0, 0);
-    printf("----MENU VENTAS----");
-
-    gotoxy(x, y);
-    printf("%c", icono);
-
-    printf("\t1)Listar demandas\n");
-    printf("\t2) Preparar demandas para la venta\n");
-    printf("\t3) VER LISTA DE PRECIOS\n");
-    printf("\t4) CARGAR PRECIOS\n");
-    printf("\t5) MODIFICAR PRECIOS\n");
-    printf("\t6) VOLVER AL MENU GENERAL\n\n");
 
     do
-
     {
-        teclaMov = getch();
+        printf("----MENU VENTAS----");
 
-        if (teclaMov == UP)
+        gotoxy(x, y);
+        printf("%c", icono);
+
+        printf("\t1)LISTAR DEMANDAS\n");
+        printf("\t2) PREPARAR DEMANDAS PARA LA VENTA\n");
+        printf("\t3) CARGAR PRECIOS\n");
+        printf("\t4) MODIFICAR PRECIOS\n");
+        printf("\t5) AGREGAR UNA VENTA\n");
+        printf("\t6) CANCELAR UNA VENTA\n");
+
+ingresoSubmenu = 1;
+        salir=0;
+
+        do
+
         {
-            gotoxy(x, y);
-            printf(" ");
-            y--; //
-            gotoxy(x, y);
-            printf("%c", icono);
-            ingresoSubmenu--;
+            teclaMov = getch();
 
-        }
-
-        else if (teclaMov == DOWN)
-        {
-            gotoxy(x, y);
-            printf(" ");
-            y++;
-            gotoxy(x, y);
-            printf("%c", icono);
-            ingresoSubmenu ++;
-        }
-
-        if (teclaMov == ENTER)
-        {
-            system("cls");
-
-            switch(ingresoSubmenu)
+            if (teclaMov == UP)
             {
-            case 1:
-                obtenerDemanda(demandas,validosDem);
-                mostrarArregloDemandas(demandas,*validosDem);
-                system("pause");
-                system("cls");
-                break;
-
-            case 2:
-                prepararDemandas(demandas,*validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,validosPV);
-                registrarPreparadosVenta(preparacionesVenta,*validosPV);
-                mostrarPreparadosVentas(preparacionesVenta,*validosPV);
-                system("pause");
-                system("cls");
-
-                break;
-
-            case 3:
-                for (int i = 0; i<5; i++)
-                {
-                    gotoxy(40, 15);
-                    printf("Venta cancelada con exito");
-                    Sleep(300);
-                    system("cls");
-                    Sleep(300);
-                }
-
-                //   mostrarPrecios(precios[], validos);
-
-                break;
-
-            case 4:
-                //   cargarPrecios(preparacionesVenta,precioPreparaciones,validosPV,stockIngredientes,validosStock,recetas,validosRec);
-                for (int i = 0; i<5; i++)
-                {
-                    gotoxy(40, 15);
-                    printf("Precios cargados con %cxito", 130);
-                    Sleep(300);
-                    system("cls");
-                    Sleep(300);
-                }
-
-                break;
-
-
-            case 5:
-                gotoxy(40, 15);
-                printf("Esta seguro que desea modificar los precios?(s/n)\n");
-                scanf("%c", &confirmacion);
-
-                if (confirmacion == 's' || confirmacion == 'S')
-                {
-                    //   modificarPrecios(precios[], validosPP)
-                }
-
-                break;
-
-            case 6:
-//                menuGeneral(demandas,validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,validosPV,precioPreparaciones,validosPP);;
-                break;
+                gotoxy(x, y);
+                printf(" ");
+                y--; //
+                gotoxy(x, y);
+                printf("%c", icono);
+                ingresoSubmenu--;
 
             }
 
+            else if (teclaMov == DOWN)
+            {
+                gotoxy(x, y);
+                printf(" ");
+                y++;
+                gotoxy(x, y);
+                printf("%c", icono);
+                ingresoSubmenu ++;
+            }
+
+            if (teclaMov == ENTER)
+            {
+                system("cls");
+
+                switch(ingresoSubmenu)
+                {
+                case 1:
+                    obtenerDemanda(demandas,validosDem);
+                    mostrarArregloDemandas(demandas,*validosDem);
+                    salir=1;
+                    x = 1;
+    y = 3;
+                    system("pause");
+                    system("cls");
+                    break;
+
+                case 2:
+                    prepararDemandas(demandas,*validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,validosPV);
+                    registrarPreparadosVenta(preparacionesVenta,*validosPV);
+                    mostrarPreparadosVentas(preparacionesVenta,*validosPV);
+                    salir=1;
+                    x = 1;
+    y = 3;
+                    system("pause");
+                    system("cls");
+
+                    break;
+
+                case 3:
+
+                    *validosPP = *validosPV;
+
+                     cargarPrecios(preparacionesVenta,precioPreparaciones,*validosPV,stockIngredientes,validosStock,recetas,validosRec);
+                    for (int i = 0; i<5; i++)
+                    {
+                        gotoxy(40, 15);
+                        printf("Precios cargados con %cxito", 130);
+                        Sleep(300);
+                        system("cls");
+                        Sleep(300);
+                    }
+
+
+                    salir=1;
+                    x = 1;
+    y = 3;
+                    mostrarPrecios(precioPreparaciones,*validosPP);
+                    system("pause");
+
+                    system("cls");
+
+                    break;
+
+                case 4:
+                    mostrarPrecios(precioPreparaciones,*validosPP);
+
+                    gotoxy(40, 15);
+                    printf("Esta seguro que desea modificar los precios?(s/n)\n");
+                    scanf("%c", &confirmacion);
+
+                    if (confirmacion == 's' || confirmacion == 'S')
+                    {
+                        modificarPrecios(precioPreparaciones, *validosPP);
+                    }
+
+                    salir=1;
+                    x = 1;
+    y = 3;
+system("pause");
+
+                    system("cls");
+
+                    break;
+
+
+                case 5:
+                    registrarVentas(precioPreparaciones,*validosPP,preparacionesVenta,*validosPV);
+                    salir=1;
+                    x = 1;
+    y = 3;
+                    system("pause");
+                    system("cls");
+
+                    break;
+
+                case 6:
+
+                    modificarVentas();
+
+
+                    for (int i = 0; i<5; i++)
+                    {
+                        gotoxy(40, 15);
+                        printf("Venta cancelada con exito");
+                        Sleep(300);
+                        system("cls");
+                        Sleep(300);
+                    }
+
+                    salir=1;
+                    x = 1;
+    y = 3;
+                    break;
+
+                }
+
+            }
         }
+        while (teclaMov != ESC && salir !=1);
     }
-    while (teclaMov != ESC);
+    while(teclaMov != ESC);
 
 
 }
@@ -1317,11 +1352,12 @@ int main()
         printf("\t2) \t Cocci%cn de preparados.\n", 162);
         printf("\t3) \t Venta al p%cblico.\n", 163);
         printf("\t4) \t Resumen del d%ca.\n",161);
-        printf("\t5) \t Salir.\n");
         printf("\n");
         printf("\tPara salir presione la tecla Esc");
         printf("\n\n");
 
+        ingresoSubmenu = 1;
+        salir = 0;
         do
         {
 
@@ -1361,6 +1397,10 @@ int main()
                     //despersiste ingredientes
 
                     menuStockIngredientes(stockIngredientes,&validosStock);
+
+                    salir = 1;
+                    x = 1;
+    y = 3;
                     system("pause");
                     system("cls");
                     break;
@@ -1369,39 +1409,60 @@ int main()
                     //ingreso al submenu recetas
 
                     menuRecetas(recetas,&validosRec);
+
+                    salir = 1;
+                    x = 1;
+    y = 3;
+                    system("cls");
+
+
                     break;
 
                 case 3:
                     //ingresu al submenu ventass
                     menuVentas(demandas,&validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,&validosPV,precioPreparaciones,&validosPP);
+
+                    salir = 1;
+                    x = 1;
+    y = 3;
+                    system("cls");
+
                     break;
 
                 case 4:
                     //ingreso alsubmenu resumen del dia
                     menuResumenDelDia(stockIngredientes,validosStock);
-                    break;
-                case 5:
-                for (int i = 0; i<5; i++)
-                {
-                    gotoxy(40, 15);
-                    printf("Saliendo del programa...");
-                    Sleep(300);
-                    system("cls");
-                    Sleep(300);
 
-                }
-                salir =1;
-                break;
+                    salir = 1;
+                    x = 1;
+    y = 3;
+                    system("cls");
+
+                    break;
+
                 }
 
             }
 
         }
-        while(salir !=1);
+        while(teclaMov !=ESC && salir != 1);
+
+
 
     } //codigo para salir
-    while (salir !=1);
+    while (teclaMov !=ESC);
 
+
+
+    for (int i = 0; i<5; i++)
+    {
+        gotoxy(40, 15);
+        printf("Saliendo del programa...");
+        Sleep(300);
+        system("cls");
+        Sleep(300);
+
+    }
 
     return 0;
 }
