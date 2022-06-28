@@ -152,6 +152,7 @@ void prepararDemandas(Preparacion[],int,Receta[],int,StockIngrediente[],int,Prep
 void registrarPreparadosVenta(PreparacionVenta[],int);
 void mostrarArregloDemandas(Preparacion[],int);
 void mostrarArregloRecetas(Receta[],int);
+void mostrarUnaReceta(Receta);
 void mostrarPreparadosVentas(PreparacionVenta[],int);
 //
 ////Implementaciones Paso 2
@@ -316,18 +317,22 @@ void mostrarArregloRecetas(Receta arreglo[],int validos)
 
     for(int i=0 ; i<validos ; i++)
     {
-        printf("\n----------------------------------------------------\n");
-        printf("Nombre receta: %s\n",arreglo[i].nombre_preparacion);
-        printf("\nIngredientes receta:\n");
-
-        for(int j=0 ; j<arreglo[i].cantIngredientes ; j++)
-        {
-            printf("\t- %s ",arreglo[i].ingredientes[j].nombre_ingrediente);
-            printf("--> Cantidad: %.2f\n",arreglo[i].ingredientes[j].cantidad);
-        }
-        printf("\n----------------------------------------------------\n");
+        mostrarUnaReceta(arreglo[i]);
     }
 
+}
+void mostrarUnaReceta(Receta r)
+{
+    printf("\n----------------------------------------------------\n");
+    printf("Nombre receta: %s\n",r.nombre_preparacion);
+    printf("\nIngredientes receta:\n");
+
+    for(int j=0 ; j<r.cantIngredientes ; j++)
+    {
+        printf("\t- %s ",r.ingredientes[j].nombre_ingrediente);
+        printf("--> Cantidad: %.2f\n",r.ingredientes[j].cantidad);
+    }
+    printf("\n----------------------------------------------------\n");
 }
 void mostrarPreparadosVentas(PreparacionVenta arreglo[],int validos)
 {
@@ -378,6 +383,8 @@ void modificarVentas();
 int cantVentas();
 
 void registrarStockRestante(StockIngrediente[],int);
+int validarNombreReceta(char[],Receta[],int);
+void centrarTexto(char[],int);
 
 
 /////////////////////implementaciones Paso 3//////////////////////////
@@ -538,7 +545,7 @@ void registrarVentas(PrecioPreparacion precios[],int validosPP,PreparacionVenta 
 
         mostrarUnaVenta(v);
 
-        printf("Desea confirmar el pedido? s/n \n");  ///se podria sacar esto
+        printf("Desea confirmar el pedido? s/n \n");
         fflush(stdin);
         scanf("%c",&op);
 
@@ -609,7 +616,7 @@ void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta prepar
     printf("\nIngrese la cantidad:  ");
     scanf("%i",&((*pedido).cantidad));
 
-    while((*pedido).cantidad<0)
+    while((*pedido).cantidad < 0)
     {
         printf("\nIngrese una cantidad valida:  ");
         scanf("%i",&((*pedido).cantidad));
@@ -623,7 +630,7 @@ void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta prepar
 }
 
 
-/*void obtenerVentas(Venta ventas[],int* validosV)
+void obtenerVentas(Venta ventas[],int* validosV)
 {
     FILE* fp;
     int i=0;
@@ -639,12 +646,12 @@ void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta prepar
             }
         }
         *validosV = i;
-        printf("Validos dentro de obtener: %i",*validosV);
+
         fclose(fp);
     }
     else
         printf("No se pudo abrir el archivo en modo lectura");
-}*/
+}
 
 int hayStockPreparado(char nombre[],int cantidad,PreparacionVenta preparacionesVenta[],int validosPV)  ///devuelve 1 si hay stock
 {
@@ -678,6 +685,20 @@ int validarNombreProducto(char nombre[],PreparacionVenta preparacionesVenta[],in
 
     return existe;
 
+}
+int validarNombreReceta(char nombre[],Receta recetas[],int validosRec)
+{
+    int existe=0,i=0;
+
+    while(i<validosRec && strcmpi(nombre,recetas[i].nombre_preparacion) != 0)
+    {
+        i++;
+    }
+
+    if(i<validosRec)
+        existe=1;
+
+    return existe;
 }
 void descontarStockPreparados(char nombre[],int cantidad,PreparacionVenta preparacionesVenta[],int validosPV)
 {
@@ -814,15 +835,17 @@ void registrarStockRestante(StockIngrediente stockIngredientes[],int validosIng)
 //prototipado menues
 void gotoxy (int, int); /// func de ubicacion de cursor
 void menuGeneral(Preparacion[],int*,Receta[],int*,StockIngrediente[],int*,Preparacion[],int*,PrecioPreparacion[],int*);
-void menuResumenDelDia(StockIngrediente[],int,float[],int*,Venta*,PrecioPreparacion[],int,PreparacionVenta[],int,char[],Receta[],int);
+void menuResumenDelDia(StockIngrediente[],int,PrecioPreparacion[],int,PreparacionVenta[],int,Receta[],int,Venta[],int*);
 
 void menuStockIngredientes(StockIngrediente[],int*);
-void menuRecetas();
+void menuRecetas(Receta recetas[],int*);
 void menuVentas(Preparacion[],int*,Receta[],int validosRec,StockIngrediente[],int,PreparacionVenta[],int*,PrecioPreparacion[],int*);
-void obtenerVentas(float[], int*); //pasa a un array las ventas del arch VENTAS
-float ingresoDelDia(float [], int ); // sumatoria de ingresos x vta usando func anterior
-void gananciaDelDia(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char[], StockIngrediente,int ,Receta ,int,float,int );
-float costosTotales(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char[], StockIngrediente,int ,Receta ,int );
+//void obtenerVentas(float[], int*); //pasa a un array las ventas del arch VENTAS
+//float ingresoDelDia(float [], int ); // sumatoria de ingresos x vta usando func anterior
+//void gananciaDelDia(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char[], StockIngrediente,int,Receta,int,float,int );
+//float costosTotales(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char[], StockIngrediente,int,Receta,int );
+float ingresoTotalDia(Venta[],int);
+float costoTotal(StockIngrediente[],int);
 
 //implementacion menues
 void gotoxy(int x, int y) //recibe coordenadas de colocacion de cursor
@@ -834,13 +857,45 @@ void gotoxy(int x, int y) //recibe coordenadas de colocacion de cursor
     coordenada.Y = y;
     SetConsoleCursorPosition (manipulador, coordenada); //recibe manipulador de buffer pantalla  y nvas coord del cursor
 }
+float ingresoTotalDia(Venta ventas[],int validosV)
+{
+    float total=0;
 
-void menuResumenDelDia(StockIngrediente stockIngredientes[],int validosIng,float registrosVentasTotales[],int* validosRV,Venta* v,PrecioPreparacion precioPreparaciones[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV,char nombre[],Receta recetas[],int validosRec)
+    for(int i=0; i<validosV ; i++)
+    {
+        total += ventas[i].valor_total;
+    }
+
+    return total;
+
+}
+
+float costoTotal(StockIngrediente stockIngredientes[],int validosStock)
+{
+    float costo=0;
+
+    for(int i=0 ; i<validosStock ; i++)
+    {
+        costo += stockIngredientes[i].cantidad * stockIngredientes[i].costo;
+    }
+
+    return costo;
+}
+
+void centrarTexto(char texto[],int y)
+{
+    int tam = strlen(texto);
+
+    gotoxy(84 - tam/2,y);
+
+    printf("%s",texto);
+}
+void menuResumenDelDia(StockIngrediente stockIngredientes[],int validosIng,PrecioPreparacion precioPreparaciones[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV,Receta recetas[],int validosRec,Venta ventas[],int* validosV)
 {
 
     char icono,op;
     int x, y, teclaMov, ingresoSubmenu,salir;
-    float  ingresoDia, gananciaDia,costoTotal;
+    float  ingresoDia, gananciaDia,costosDia;
     x = 1;
     y = 3;
     icono = 16;
@@ -854,7 +909,8 @@ void menuResumenDelDia(StockIngrediente stockIngredientes[],int validosIng,float
         //posicionamiento y muestra de menu
 
 
-        printf("\n----MENU RESUMEN DEL DIA-----\n\n");
+       printf("\n----MENU RESUMEN DEL DIA-----\n\n");
+
         gotoxy(x, y);
         printf("%c", icono);
         printf("\t1. Ver lista de remanentes de ingredientes en stock\n");
@@ -943,9 +999,13 @@ void menuResumenDelDia(StockIngrediente stockIngredientes[],int validosIng,float
 
                     printf("INGRESO TOTAL DEL DIA\n");
 
-                    obtenerVentas(registrosVentasTotales,validosRV);
+                    obtenerVentas(ventas,validosV);
 
-                    ingresoDia = ingresoDelDia(registrosVentasTotales,*validosRV);
+                    //ingresoDia = ingresoDelDia(registrosVentasTotales,*validosRV);
+
+                    ingresoDia = ingresoTotalDia(ventas,*validosV);
+
+                    printf("\nEl ingreso total del dia fue de $ %.2f\n",ingresoDia);
 
                     x = 1;
                     y = 3;
@@ -958,10 +1018,17 @@ void menuResumenDelDia(StockIngrediente stockIngredientes[],int validosIng,float
 
                     printf("GANANCIA DEL DIA\n");
 
-                    void gananciaDelDia(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char[], StockIngrediente,int ,Receta ,int );
+                    //void gananciaDelDia(Venta*,PrecioPreparacion,int,PreparacionVenta,int, char[], StockIngrediente,int,Receta,int );
 
 
-                    gananciaDelDia(v,precioPreparaciones,validosPP,preparacionesVenta,validosPV,nombre,stockIngrediente,validosIng,recetas,validosRec,registrosVentasTotales,*validosRV);
+                    //gananciaDelDia(v,precioPreparaciones,validosPP,preparacionesVenta,validosPV,nombre,stockIngrediente,validosIng,recetas,validosRec,registrosVentasTotales,*validosRV);
+
+                    ingresoDia = ingresoTotalDia(ventas,*validosV);
+                    costosDia = costoTotal(stockIngredientes,validosIng);
+
+                    gananciaDia = ingresoDia - costosDia;
+
+                    printf("\nLa ganancia del dia fue de $ %.2f\n",gananciaDia);
 
                     x = 1;
                     y = 3;
@@ -1054,7 +1121,7 @@ void menuRecetas(Receta recetas[],int* validosRec)
                 case 1:
 
                     gotoxy(40, 15);
-                    for (int i = 0; i<5; i++)
+                    for (int i = 0; i<3; i++)
                     {
                         gotoxy(40, 15);
                         printf("Cargando recetas...");
@@ -1079,9 +1146,17 @@ void menuRecetas(Receta recetas[],int* validosRec)
                     printf("Ingrese la receta que desea buscar:");
                     fflush(stdin);
                     gets(recetaBuscada);
+
+                    while(!validarNombreReceta(recetaBuscada,recetas,*validosRec))
+                    {
+                        printf("El nombre ingresado no existe. Ingrese la receta que desea buscar:");
+                        fflush(stdin);
+                        gets(recetaBuscada);
+                    }
+
                     recetaEncontrada = buscarRecetaPorNombre(recetaBuscada,recetas,*validosRec);
-                    system("cls");
-                    printf("%s \n", recetas[recetaEncontrada].nombre_preparacion);
+                    mostrarUnaReceta(recetas[recetaEncontrada]);
+
                     system("pause");
                     system("cls");
 
@@ -1191,7 +1266,7 @@ void menuVentas(Preparacion demandas[],int* validosDem,Receta recetas[],int vali
                     *validosPP = *validosPV;
 
                     cargarPrecios(preparacionesVenta,precioPreparaciones,*validosPV,stockIngredientes,validosStock,recetas,validosRec);
-                    for (int i = 0; i<5; i++)
+                    for (int i = 0; i<3; i++)
                     {
                         gotoxy(40, 15);
                         printf("Precios cargados con %cxito", 130);
@@ -1249,7 +1324,7 @@ void menuVentas(Preparacion demandas[],int* validosDem,Receta recetas[],int vali
                     modificarVentas();
 
 
-                    for (int i = 0; i<5; i++)
+                    for (int i = 0; i<3; i++)
                     {
                         gotoxy(40, 15);
                         printf("Venta cancelada con exito");
@@ -1287,7 +1362,7 @@ void menuVentas(Preparacion demandas[],int* validosDem,Receta recetas[],int vali
 
 
 }
-void obtenerVentas(float registroVentas[], int* validosRV)
+/*void obtenerVentas(float registroVentas[], int* validosRV)
 {
     FILE* fp;
     int aux, i=0;
@@ -1310,23 +1385,23 @@ void obtenerVentas(float registroVentas[], int* validosRV)
     }
 
 
-}
+}*/
 float ingresoDelDia(float registroVentas[], int validosRV)
 {
-        float sumatoriaIngresos = 0;
+    float sumatoriaIngresos = 0;
 
 
-        for(int i = 0; i < validosRV; i++)
-        {
-            sumatoriaIngresos = sumatoriaIngresos + registroVentas[i];
-        }
-        printf("Ingreso del dia: %.2f\n", sumatoriaIngresos);
+    for(int i = 0; i < validosRV; i++)
+    {
+        sumatoriaIngresos = sumatoriaIngresos + registroVentas[i];
+    }
+    printf("Ingreso del dia: %.2f\n", sumatoriaIngresos);
 
 
 
     return sumatoriaIngresos;
 }
-float costosTotales(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV, char nombre[],StockIngrediente stockIngredientes[],int validosStock,Receta recetas[],int validosRec)
+/*float costosTotales(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV, char nombre[],StockIngrediente stockIngredientes[],int validosStock,Receta recetas[],int validosRec)
 {
     agarrarCosto = costoPreparacion(nombre,stockIngredientes,validosStock,recetas,validosRec);
 
@@ -1336,7 +1411,7 @@ float costosTotales(Venta* v,PrecioPreparacion precios[],int validosPP,Preparaci
     {
         sumatoriaCostos =+ agarrarCosto;
     }
-  return sumatoriaCostos;
+    return sumatoriaCostos;
 }
 void gananciaDelDia(Venta* v,PrecioPreparacion precios[],int validosPP,PreparacionVenta preparacionesVenta[],int validosPV, char nombre[],StockIngrediente stockIngredientes[],int validosStock,Receta recetas[],int validosRec,float registroVentas,int validosRV)
 {
@@ -1349,7 +1424,7 @@ void gananciaDelDia(Venta* v,PrecioPreparacion precios[],int validosPP,Preparaci
     gananciaDelDia = ingresos - costos;
     printf("La ganancia del d%ca es de: $%.2f", 161, gananciaDelDia);
 }
-
+*/
 
 
 int main()
@@ -1366,6 +1441,8 @@ int main()
     int validosPP=0;
     float registroVentasTotal[N];
     int validosRV = 0;
+    Venta ventas[N];
+    int validosV = 0;
 
     system("cls");
 
@@ -1472,6 +1549,7 @@ int main()
                     //ingresu al submenu ventass
                     menuVentas(demandas,&validosDem,recetas,validosRec,stockIngredientes,validosStock,preparacionesVenta,&validosPV,precioPreparaciones,&validosPP);
 
+
                     salir = 1;
                     x = 1;
                     y = 3;
@@ -1481,9 +1559,9 @@ int main()
 
                 case 4:
                     //ingreso alsubmenu resumen del dia
-                    menuResumenDelDia(stockIngredientes,validosStock,registroVentasTotal,&validosRV,v,precioPreparaciones,validosPP,preparacionesVenta,validosPV,nombre,recetas,validosRec);
+                    //menuResumenDelDia(stockIngredientes,validosStock,registroVentasTotal,&validosRV,v,precioPreparaciones,validosPP,preparacionesVenta,validosPV,nombre,recetas,validosRec);
                     //(StockIngrediente[],int,float[],int*,Venta*,PrecioPreparacion[],int,PreparacionVenta[],int,char[],Receta[],int);
-
+                    menuResumenDelDia(stockIngredientes,validosStock,precioPreparaciones,validosPP,preparacionesVenta,validosPV,recetas,validosRec,ventas,&validosV);
                     salir = 1;
                     x = 1;
                     y = 3;
@@ -1499,7 +1577,7 @@ int main()
     while (teclaMov !=ESC);
 
 
-    for (int i = 0; i<5; i++)
+    for (int i = 0; i<3; i++)
     {
         gotoxy(40, 15);
         printf("Saliendo del programa...");
