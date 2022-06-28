@@ -1160,9 +1160,9 @@ void menuRecetas(Receta recetas[],int* validosRec)
 }
 void menuVentas(Preparacion demandas[],int* validosDem,Receta recetas[],int validosRec,StockIngrediente stockIngredientes[],int validosStock,PreparacionVenta preparacionesVenta[],int* validosPV,PrecioPreparacion precioPreparaciones[],int* validosPP )
 {
-    char icono, comprobante, confirmacion;
+    char icono, confirmacion;
     int teclaMov, x, y, ingresoSubmenu,salir=0;
-    float agarrarCosto;
+
     icono = 16;
     x = 1;
     y = 3;
@@ -1363,8 +1363,6 @@ int main()
     int validosPV=0;
     PrecioPreparacion precioPreparaciones[N];
     int validosPP=0;
-    float registroVentasTotal[N];
-    int validosRV = 0;
     Venta ventas[N];
     int validosV = 0;
 
@@ -1372,7 +1370,7 @@ int main()
 
     system("COLOR E0"); //color pantalla (fue random)
     char icono, correrPrograma;
-    int x, y, teclaMov, ingresoSubmenu, selector1,salir;
+    int x, y, teclaMov, ingresoSubmenu,salir;
     x = 1;
     y = 3;
     ingresoSubmenu = 1;
