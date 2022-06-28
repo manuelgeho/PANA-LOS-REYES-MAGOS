@@ -609,6 +609,12 @@ void ingresarPedidoPreparacion(PedidoPreparacion* pedido,PreparacionVenta prepar
     printf("\nIngrese la cantidad:  ");
     scanf("%i",&((*pedido).cantidad));
 
+    while((*pedido).cantidad<0)
+    {
+        printf("\nIngrese una cantidad valida:  ");
+        scanf("%i",&((*pedido).cantidad));
+    }
+
     while(!hayStockPreparado((*pedido).nombre_preparacion,(*pedido).cantidad,preparacionesVenta,validosPV))
     {
         printf("\nIngrese una nueva cantidad o 0 para anular este pedido:  ");
@@ -1360,6 +1366,8 @@ int main()
     int validosPP=0;
     float registroVentasTotal[N];
     int validosRV = 0;
+
+    system("cls");
 
     system("COLOR E0"); //color pantalla (fue random)
     char icono, correrPrograma;
